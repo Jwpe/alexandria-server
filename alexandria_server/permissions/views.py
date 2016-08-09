@@ -4,9 +4,12 @@ from django.shortcuts import get_object_or_404, reverse
 import json
 import requests
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 
+from .authentication import generate_jwt, JWTAuthentication
 from .models import OauthToken, User
+from .serializers import UserSerializer
 
 
 OAUTH_URL = "https://github.com/login/oauth/"
@@ -51,7 +54,8 @@ class GitHubAuthorize(APIView):
         return oauth_url
 
     def _add_params(self, uri, params):
-        uri_with_params = uri + '?' + '&'.join(['{0}={1}'.format(k, v) for k, v in params.items()])
+        uri_with_params = uri + '?' + '&'.join(
+            ['{0}={1}'.format(k, v) for k, v in params.items()])
         return uri_with_params
 
 
@@ -76,14 +80,17 @@ class GitHubCallback(APIView):
 
             user = self._get_or_create_user(token=token)
 
-            return Response({'data': {
-                'user_email': user.email,
-                'access_token': token.token
-            }})
+            jwt = generate_jwt(user)
+            data = {'token': jwt}
+
+            return Response({'data': data})
 
         else:
             return Response({'errors': [
-                {'status': 403, 'detail': "User has not authorized the correct scopes"}
+                {
+                    'status': 403,
+                    'detail': "User has not authorized the correct scopes"
+                }
             ]})
 
     def _get_or_create_user(self, token):
@@ -140,3 +147,11 @@ class GitHubCallback(APIView):
         response.raise_for_status()
 
         return response.json()
+
+
+class UserViewset(ModelViewSet):
+
+    queryset = User.objects.all()
+
+    authentication_classes = (JWTAuthentication,)
+    serializer_class = UserSerializer

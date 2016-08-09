@@ -1,8 +1,6 @@
-from django.conf.urls import url
+from rest_framework import routers
+from .views import UserViewset
 
-from .views import GitHubAuthorize, GitHubCallback
-
-urlpatterns = [
-    url(r'^authorize/', GitHubAuthorize.as_view(), name='authorize'),
-    url(r'^callback/', GitHubCallback.as_view(), name='callback'),
-]
+router = routers.SimpleRouter()
+router.register(r'', UserViewset)
+urlpatterns = router.urls
