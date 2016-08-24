@@ -23,6 +23,9 @@ class User(models.Model):
     """
 
     email = models.EmailField(unique=True)
+
     github_id = models.IntegerField()
+    github_username = models.CharField(max_length=255)
+
     token = models.ForeignKey(OauthToken)
 

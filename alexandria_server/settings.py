@@ -17,11 +17,7 @@ if os.environ.get('DEBUG'):
 else:
     DEBUG = False
 
-GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
-GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
-
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -33,6 +29,7 @@ INSTALLED_APPS = [
     'rest_framework',
     # Internal
     'alexandria_server.permissions',
+    'alexandria_server.projects',
 ]
 
 MIDDLEWARE = [
@@ -65,7 +62,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-# DRF
+# DRF settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
     'DEFAULT_PERMISSION_CLASSES': [],
@@ -74,3 +71,10 @@ REST_FRAMEWORK = {
     ),
     'UNAUTHENTICATED_USER': None
 }
+
+# GitHub settings
+GITHUB_OAUTH_URL = "https://github.com/login/oauth/"
+GITHUB_API_URL = "https://api.github.com/"
+
+GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
+GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')

@@ -12,10 +12,6 @@ from .models import OauthToken, User
 from .serializers import UserSerializer
 
 
-OAUTH_URL = "https://github.com/login/oauth/"
-API_URL = "https://api.github.com/"
-
-
 class GitHubAuthorize(APIView):
 
     def get(self, request):
@@ -39,7 +35,7 @@ class GitHubAuthorize(APIView):
     def _get_oauth_url(self, request, token):
 
         redirect_uri = request.build_absolute_uri(
-            reverse('oauth:callback'))
+            reverse('callback'))
 
         params = {
             'state': token.state,
@@ -48,7 +44,7 @@ class GitHubAuthorize(APIView):
             'redirect_uri': redirect_uri,
         }
 
-        uri = OAUTH_URL + "authorize"
+        uri = settings.GITHUB_OAUTH_URL + "authorize"
 
         oauth_url = self._add_params(uri, params)
         return oauth_url
@@ -95,7 +91,7 @@ class GitHubCallback(APIView):
 
     def _get_or_create_user(self, token):
 
-        user_url = API_URL + 'user'
+        user_url = settings.GITHUB_API_URL + 'user'
 
         headers = {'Authorization': 'token {}'.format(token.token)}
 
@@ -104,7 +100,10 @@ class GitHubCallback(APIView):
 
         try:
 
-            user = User.objects.get(email=data['email'], github_id=data['id'])
+            user = User.objects.get(
+                github_username=data['login'], github_id=data['id'])
+            user.email = data['email']
+
             old_token = user.token
             user.token = token
             user.save()
@@ -113,7 +112,8 @@ class GitHubCallback(APIView):
         except User.DoesNotExist:
 
             user = User.objects.create(
-                email=data['email'], github_id=data['id'], token=token)
+                github_username=data['login'], github_id=data['id'],
+                email=data['email'], token=token)
 
         return user
 
@@ -135,7 +135,7 @@ class GitHubCallback(APIView):
 
     def _get_access_token(self, code):
 
-        uri = OAUTH_URL + "access_token"
+        uri = settings.GITHUB_OAUTH_URL + "access_token"
         params = {
             'code': code,
             'client_id': settings.GITHUB_CLIENT_ID,
