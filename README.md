@@ -12,6 +12,8 @@ The project is currently in a very early alpha stage and as such all APIs will b
 
 `alexandria-server` requires [Docker](https://docs.docker.com/engine/installation/) 1.11 and `docker-compose` version 1.5 or above to run locally.
 
+### Running the server
+
 To run the server, set up a `.env` file in the root directory of the project containing the following environment variables:
 
 ```bash
@@ -31,6 +33,14 @@ docker-compose run server python manage.py migrate
 The server is then run with the `docker-compose up` command.
 
 In order to correctly recieve callbacks from the GitHub OAuth flow, you will need to expose your local port 80 to a secure online address. You can do this using the [`ngrok` service](https://ngrok.com) or any software able to set up a secure local tunnel. Don't forget to add the tunnel's URL to your OAuth application's callback URL on GitHub!
+
+### Running tests
+
+To run tests locally, use the following command:
+
+```bash
+docker-compose run server python manage.py test tests/
+```
 
 ## Contributing
 
