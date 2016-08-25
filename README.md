@@ -1,5 +1,7 @@
 # alexandria-server
 
+![travis](https://travis-ci.org/Jwpe/alexandria-server.svg?branch=master)
+
 This repository contains the server element of the work-in-progress Alexandria documentation service.
 
 `alexandria-server` is responsible for authentication of users with GitHub, issuing authorization tokens, and managing user, organization and project data.
