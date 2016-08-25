@@ -1,5 +1,9 @@
 sudo: required
 services:
   - docker
+before_script:
+  - echo "SECRET_KEY=imsosecret" >> .env
+  - echo "GITHUB_CLIENT_ID=yeahbutigota" >> .env
+  - echo "GITHUB_CLIENT_SECRET=fakeidtho" >> .env
 script:
     - "docker-compose run server python manage.py test tests/"
