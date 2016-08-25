@@ -3,11 +3,14 @@ from django.shortcuts import get_object_or_404, reverse
 
 import json
 import requests
+
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 
 from .authentication import generate_jwt, JWTAuthentication
+from .helpers import get_access_token, get_user_from_token
 from .models import OauthToken, User
 from .serializers import UserSerializer
 
@@ -66,7 +69,7 @@ class GitHubCallback(APIView):
         token = get_object_or_404(OauthToken, state=state)
 
         try:
-            data = self._get_access_token(code)
+            data = get_access_token(code)
         except requests.HTTPError as e:
             return self._generate_error_response(e)
 
@@ -84,19 +87,14 @@ class GitHubCallback(APIView):
         else:
             return Response({'errors': [
                 {
-                    'status': 403,
+                    'status': status.HTTP_403_FORBIDDEN,
                     'detail': "User has not authorized the correct scopes"
                 }
-            ]})
+            ]}, status=status.HTTP_403_FORBIDDEN)
 
     def _get_or_create_user(self, token):
 
-        user_url = settings.GITHUB_API_URL + 'user'
-
-        headers = {'Authorization': 'token {}'.format(token.token)}
-
-        response = requests.get(user_url, headers=headers)
-        data = response.json()
+        data = get_user_from_token(token.token)
 
         try:
 
@@ -131,22 +129,7 @@ class GitHubCallback(APIView):
                     'detail': detail
                 }
             ]
-        })
-
-    def _get_access_token(self, code):
-
-        uri = settings.GITHUB_OAUTH_URL + "access_token"
-        params = {
-            'code': code,
-            'client_id': settings.GITHUB_CLIENT_ID,
-            'client_secret': settings.GITHUB_CLIENT_SECRET,
-        }
-        headers = {'Accept': 'application/json'}
-
-        response = requests.post(uri, headers=headers, params=params)
-        response.raise_for_status()
-
-        return response.json()
+        }, status=error.response.status_code)
 
 
 class UserViewset(ModelViewSet):
